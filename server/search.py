@@ -139,7 +139,7 @@ if __name__ == '__main__':
     print('search......')
     sh = search()
     #创建扫描任务
-#     sh.createshtask('扫描vmic.xyz', 'vmic.xyz', 'password', 'password')    
+#     sh.createshtask('扫描test.xyz', 'test.xyz', 'password', 'password')    
     values = sh.getshtaskinfo(2)
     print(values[0])    
     sh.executetask(2)

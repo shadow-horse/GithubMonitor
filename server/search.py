@@ -41,15 +41,29 @@ class search:
         parent_id = values[0][5]
         status = values[0][6]
         
+        #答应扫描的任务
+        print('==============扫描任务=================')
+        print('id:'+ str(id))
+        print('name:' + name)
+        print('f_keys:' + f_keys)
+        print('s_keys'+ s_keys)
+        print('repo_keys:'+repo_keys)
+        print(parent_id)
+        print(status)
+        print('====================================')
+        
+
         #创建扫描任务db及表
         dbo = dboperation.dboperation()
         dbo.createscantaskdb(id)
         
         #判断扫描状态
-        print(f_keys)
+        #判断是否存在parent_id，基于已有结果进行搜索
+        #此处直接search code
         ii = 0
         api = githubapi.githubapi()
         res = api.searchcode(f_keys)
+        print(res)
         if not res:
             print('初始扫描异常，扫描结束')
             return False
@@ -62,7 +76,7 @@ class search:
         for i in item:
             ii = ii + 1
             print('第%s条扫描结果' % (ii))
-            self.dealitem(i,id,s_keys)
+            self.dealitem(i,id,f_keys,s_keys,repo_keys)
         
 #         for i in range(2,pages+1):
 #             res = api.searchcode(f_keys,i)
@@ -83,28 +97,33 @@ class search:
         return True
     
     
-    def dealitem(self,item,id,s_keys='',repo_keys=''):
+    def dealitem(self,item,id,f_keys,s_keys='',repo_keys=''):
         name = item['name']
         path = item['path']
         sha = item['sha']
         html_url = item['html_url']
         repo_name = item['repository']['full_name']
         content = ''
-        
-        print(name)
-        print(path)
-        print(sha)
-        print(html_url)
-        print(repo_name)
-        
+            
         dbitem = dboperation.dboperation()
         #打开数据库连接
+        print("打开数据库")
         dbitem.openscanlist(id)
         
+        rawsearch = githubapi.githubapi()
+        #如果没有二级搜索关键词，则直接处理一级扫描结果
+        s_keys = ''
         if(s_keys == ''):
+            #获取content
+            content = rawsearch.getkeywords(html_url,f_keys)
+            print("name=>%s %s" % (type(name),type(path)))
+            print("url=>%s" % (type(html_url)))
+            print("repo=>%s" % (type(repo_name)))
+            print("content=>%s" % (type(content)))
+            
             dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
         else:
-            rawsearch = githubapi.githubapi()
+            
             content = rawsearch.getkeywords(html_url,s_keys)
             if content !='' :
                 dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
@@ -112,7 +131,8 @@ class search:
                 print('seconde keys search is null ' )
             
         #关闭数据库连接
-        dbitem.closescanlist()        
+        dbitem.closescanlist()  
+        print("关闭数据库")      
         return True
 
 if __name__ == '__main__':

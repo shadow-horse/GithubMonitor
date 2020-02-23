@@ -8,6 +8,7 @@ import urllib.parse
 import time
 import math
 from asyncio.tasks import sleep
+requests.adapters.DEFAULT_RETRIES = 5
 
 class githubapi:
     def __init__(self):
@@ -21,11 +22,11 @@ class githubapi:
         try:
             print('search code please wait 2 second......')
             self.session = requests.session()
+            self.session.keep_alive = False
             time.sleep(1)
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
             result = self.session.get(url=url,headers=self.headers,timeout=10)
-            
             if(not self.checkratelimit(result.headers)):
                 return self.searchcode(id, page, per_page)
             self.session.close()
@@ -41,6 +42,7 @@ class githubapi:
     def searchrepositories(self,id):
         url = 'https://api.github.com/search/repositories?q='+urllib.parse.quote(id)
         self.session = requests.session()
+        self.session.keep_alive = False
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json()
@@ -48,6 +50,7 @@ class githubapi:
     def searchcommits(self,id):
         url = 'https://api.github.com/search/commits?q='+urllib.parse.quote(id)
         self.session = requests.session()
+        self.session.keep_alive = False        
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json()
@@ -55,6 +58,7 @@ class githubapi:
     def searchissues(self,id):
         url = 'https://api.github.com/search/issues?q='+urllib.parse.quote(id)
         self.session = requests.session()
+        self.session.keep_alive = False 
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json() 
@@ -63,17 +67,19 @@ class githubapi:
     def searchrawfile(self,url):
         #正则替换 github.com => raw.githubusercontent.com 
         rawurl = url.replace('github.com','raw.githubusercontent.com',1).replace('/blob/','/',1)
-        print('search rawfile please wait 2 seconds: '+rawurl)
         time.sleep(2)
         ses = requests.session()
+        #关闭多余连接，解决Max retries exceeded with url问题
+        ses.keep_alive = False
         text=''
         try:
-            result = ses.get(url=rawurl,headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36'},timeout=60)
+            result = ses.get(rawurl)
             self.checkratelimit(result.headers)
             text = result.text
         except Exception as e:
             print('searchrawfile exception %s......' % (e))
-            text = ''
+            #如果获取源文件失败，则返回以下内容，默认记录到扫描结果中，以便操作人去访问连接并检查
+            text = 'Get raw file failed, please access the link.'
         ses.close()
         return text
     
@@ -82,6 +88,7 @@ class githubapi:
         path = path[:path.rfind('/')]
         url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' path:' +path+ ' filename:'+name +' repo:'+repo + '&sort=indexed&order=desc'
         self.session = requests.session()
+        self.session.keep_alive = False 
         try:
             result = self.session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):
@@ -102,12 +109,21 @@ class githubapi:
         #确定该文件需要展示时，调用该方法获取存在搜索关键词的代码片段，发现代码片段后，取前一行和后一行进行拼接
         rawcontent = self.searchrawfile(html_url)
         content = rawcontent.split('\n')
+        #返回查询结果，如果查询结果超过5个，则终止，以免内容过多
         result = ''
+        resultindex = 1
         index = 0
         for line in content:
             index = index + 1
             if(id in line):
+                if(resultindex > 5):
+                    break;
+                resultindex = resultindex+1
                 result = result + '%s:%s\n\n' %(index,line)
+        #如果result为空，意味着没有搜索到关键词，但是应该能搜索到，故设置result=content
+        if result == '':
+            result = rawcontent
+#         print(result)
         return result
     
     def close(self):
@@ -126,7 +142,6 @@ class githubapi:
             print('Retry-After please wait %s seconds......' % (retry_after))
             time.sleep(int(retry_after))
             return False
-        
         return True
     
     

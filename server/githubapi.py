@@ -133,7 +133,7 @@ class githubapi:
 if __name__ == '__main__':
     api = githubapi()
     
-#     res = api.searchcode('vivo.com.cn')
+#     res = api.searchcode('hello.com.cn')
 #     total_count = res['total_count']
 #     pages = math.floor(total_count/100)
 #     print(pages)

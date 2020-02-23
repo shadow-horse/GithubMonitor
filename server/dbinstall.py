@@ -47,7 +47,7 @@ def createmaindbsql():
     #初始化一条记录
 #     sql = "insert into scantask ( name,f_keys,s_keys,repo_keys,parent_id,states) values ("\
 #         + "\'扫描任务\',"\
-#         + "\'vivo.com vivo.xyz vmic.xyz\',"\
+#         + "\'test.com vivo.xyz vmic.xyz\',"\
 #         + "\'username password passwd\',"\
 #         + "\'password: passwd:\',"\
 #         + "\'0\',"\

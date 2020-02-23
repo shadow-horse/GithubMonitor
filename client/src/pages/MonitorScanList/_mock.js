@@ -9,7 +9,7 @@ const genList = (current, pageSize) => {
     tableListDataSource.push({
       key: index,
       name: `扫描任务 ${index}`,
-      f_keys: 'www.vivo.com.cn',
+      f_keys: 'www.test.com.cn',
       s_keys: 'password',
       repo_keys: 'username && password',
       parent_id: '10001',

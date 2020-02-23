@@ -11,6 +11,7 @@ _roadhog-api-doc
 .project
 .pydevproject
 .settings
+*.db
 # misc
 .DS_Store
 npm-debug.log*

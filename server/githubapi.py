@@ -22,11 +22,12 @@ class githubapi:
         try:
             print('search code please wait 2 second......')
             self.session = requests.session()
-            self.session.keep_alive = False
+            #在调用github api时，不能设置keep_alive=false
+            #self.session.keep_alive = False
             time.sleep(1)
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
-            result = self.session.get(url=url,headers=self.headers,timeout=10)
+            result = self.session.get(url=url,headers=self.headers,timeout=60)
             if(not self.checkratelimit(result.headers)):
                 return self.searchcode(id, page, per_page)
             self.session.close()
@@ -42,7 +43,7 @@ class githubapi:
     def searchrepositories(self,id):
         url = 'https://api.github.com/search/repositories?q='+urllib.parse.quote(id)
         self.session = requests.session()
-        self.session.keep_alive = False
+#         self.session.keep_alive = False
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json()
@@ -50,7 +51,7 @@ class githubapi:
     def searchcommits(self,id):
         url = 'https://api.github.com/search/commits?q='+urllib.parse.quote(id)
         self.session = requests.session()
-        self.session.keep_alive = False        
+#         self.session.keep_alive = False        
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json()
@@ -58,7 +59,7 @@ class githubapi:
     def searchissues(self,id):
         url = 'https://api.github.com/search/issues?q='+urllib.parse.quote(id)
         self.session = requests.session()
-        self.session.keep_alive = False 
+#         self.session.keep_alive = False 
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json() 
@@ -88,7 +89,7 @@ class githubapi:
         path = path[:path.rfind('/')]
         url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' path:' +path+ ' filename:'+name +' repo:'+repo + '&sort=indexed&order=desc'
         self.session = requests.session()
-        self.session.keep_alive = False 
+#         self.session.keep_alive = False 
         try:
             result = self.session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):

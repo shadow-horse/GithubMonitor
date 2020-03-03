@@ -24,7 +24,6 @@ class githubapi:
             self.session = requests.session()
             #在调用github api时，不能设置keep_alive=false
             #self.session.keep_alive = False
-            time.sleep(1)
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
             result = self.session.get(url=url,headers=self.headers,timeout=60)
@@ -68,13 +67,13 @@ class githubapi:
     def searchrawfile(self,url):
         #正则替换 github.com => raw.githubusercontent.com 
         rawurl = url.replace('github.com','raw.githubusercontent.com',1).replace('/blob/','/',1)
-        time.sleep(2)
+        time.sleep(0)
         ses = requests.session()
         #关闭多余连接，解决Max retries exceeded with url问题
         ses.keep_alive = False
         text=''
         try:
-            result = ses.get(rawurl)
+            result = ses.get(rawurl,timeout = 30)
             self.checkratelimit(result.headers)
             text = result.text
         except Exception as e:
@@ -123,7 +122,7 @@ class githubapi:
                 result = result + '%s:%s\n\n' %(index,line)
         #如果result为空，意味着没有搜索到关键词，但是应该能搜索到，故设置result=content
         if result == '':
-            result = rawcontent
+            result = 'search content is null.'
 #         print(result)
         return result
     

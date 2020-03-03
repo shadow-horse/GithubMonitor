@@ -5,6 +5,7 @@
     说明：后台应用，不做SQL注入防护
 '''
 import sqlite3
+from numpy.distutils.from_template import item_re
 
 class dboperation:
     def __init__(self):
@@ -123,6 +124,15 @@ class dboperation:
         self.slcursor.execute(sql,(status,sha))
         return True
     
+    '''
+    删除某条记录
+    '''
+    def deletescanlist(self,id):
+        sql = "delete from scanlist where id =?"
+        self.slcursor.execute(sql,[(id)])
+        return True
+        
+    
 if __name__ == '__main__':
     
     db = dboperation()
@@ -132,7 +142,12 @@ if __name__ == '__main__':
     db.openscanlist(2)
 #     db.insertscanlist('test', 'http://www.baidu.com', 'sha1', 'html_url', 'repo', 'content')
     values = db.selectallscanlist()
-    print(values)
+    for item in values:
+        print(item)
+#     
+#     for i in range(1,64):
+#         db.deletescanlist(str(i))
+    
     db.closescanlist() 
     
     

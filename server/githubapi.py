@@ -21,9 +21,10 @@ class githubapi:
     def searchcode(self,id,page=1,per_page=100):
         try:
             print('search code please wait 2 second......')
+            time.sleep(2)
             self.session = requests.session()
             #在调用github api时，不能设置keep_alive=false
-            #self.session.keep_alive = False
+            self.session.keep_alive = False
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
             result = self.session.get(url=url,headers=self.headers,timeout=60)
@@ -42,7 +43,7 @@ class githubapi:
     def searchrepositories(self,id):
         url = 'https://api.github.com/search/repositories?q='+urllib.parse.quote(id)
         self.session = requests.session()
-#         self.session.keep_alive = False
+        self.session.keep_alive = False
         result = self.session.get(url=url,headers=self.headers)
         self.session.close()
         return result.json()
@@ -67,7 +68,7 @@ class githubapi:
     def searchrawfile(self,url):
         #正则替换 github.com => raw.githubusercontent.com 
         rawurl = url.replace('github.com','raw.githubusercontent.com',1).replace('/blob/','/',1)
-        time.sleep(0)
+        time.sleep(2)
         ses = requests.session()
         #关闭多余连接，解决Max retries exceeded with url问题
         ses.keep_alive = False
@@ -88,7 +89,7 @@ class githubapi:
         path = path[:path.rfind('/')]
         url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' path:' +path+ ' filename:'+name +' repo:'+repo + '&sort=indexed&order=desc'
         self.session = requests.session()
-#         self.session.keep_alive = False 
+        self.session.keep_alive = False 
         try:
             result = self.session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):
@@ -109,7 +110,7 @@ class githubapi:
     def searchByrepo(self,repo,id):
         url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' repo:'+repo + '&sort=indexed&order=desc'
         self.session = requests.session()
-#         self.session.keep_alive = False 
+        self.session.keep_alive = False 
         try:
             result = self.session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):

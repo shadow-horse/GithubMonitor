@@ -18,7 +18,7 @@ const UpdateForm = props => {
   const [formVals, setFormVals] = useState({
     name: props.values.name,
     desc: props.values.desc,
-    key: props.values.key,
+    key: props.values.id,
     target: '0',
     template: '0',
     type: '1',

@@ -105,6 +105,27 @@ class githubapi:
             self.session.close()
             return False
     
+    #在仓库中搜索关键词
+    def searchByrepo(self,repo,id):
+        url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' repo:'+repo + '&sort=indexed&order=desc'
+        self.session = requests.session()
+#         self.session.keep_alive = False 
+        try:
+            result = self.session.get(url=url,headers=self.headers)
+            if(not self.checkratelimit(result.headers)):
+                return self.searchByrepo(repo,id)
+            
+            self.session.close()
+            if 'items' in result.json().keys():
+                return result.json()
+            else:
+                return False
+        
+        except Exception as e:
+            print('searchByrepo exception %s......' % (e))
+            self.session.close()
+            return False
+    
     def getkeywords(self,html_url,id):
         #确定该文件需要展示时，调用该方法获取存在搜索关键词的代码片段，发现代码片段后，取前一行和后一行进行拼接
         rawcontent = self.searchrawfile(html_url)
@@ -148,12 +169,13 @@ class githubapi:
 if __name__ == '__main__':
     api = githubapi()
     
-#     res = api.searchcode('hello.com.cn')
-#     total_count = res['total_count']
-#     pages = math.floor(total_count/100)
-#     print(pages)
-#     items = res['items']
-#     ii = 0
+    res = api.searchcode('hello.com.cn')
+    total_count = res['total_count']
+    pages = math.floor(total_count/100)
+    print(pages)
+    items = res['items']
+    print(res)
+    ii = 0
 #     for i in items:
 #         ii = ii+1
 #         print(ii)
@@ -162,6 +184,8 @@ if __name__ == '__main__':
 #         print(i['sha'])
 #         print(i['html_url'])
 #         print(i['repository']['full_name'])
+    res = api.searchByrepo('influencer-checker/influencer-checker.github.io', 'hello.com.cn')
+    print(res)
 #     time.sleep(2)
 #     print('===========================')
 #     for i in range(2,pages+1):
@@ -172,8 +196,8 @@ if __name__ == '__main__':
 #         break
 #     time.sleep(2)
 #     print("===========================")
-    res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/vivo.com.cn/vivo.com.cn-subdomain.txt', 'vivo.com.cn')
-    print(res)
+#     res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/vivo.com.cn/vivo.com.cn-subdomain.txt', 'vivo.com.cn')
+#     print(res)
 #     time.sleep(5)
 #     res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','维沃移动')
 #     print(res)

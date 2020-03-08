@@ -5,7 +5,7 @@ import { PageHeaderWrapper } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
-import { queryRule, updateRule, addRule, removeRule ,deleteRule} from './service';
+import { queryRule, addRule, removeRule ,deleteRule,runscantask} from './service';
 /**
  * 添加节点
  * @param fields
@@ -57,10 +57,10 @@ const handleUpdate = async fields => {
  */
 const handleDelete = async (fields,actionRef) => {
   const hide = message.loading('正在删除');
-  console.log('key', fields.key);
+  console.log('id', fields.id);
   try {
     await deleteRule({
-      key: fields.key,
+      id: fields.id,
     });
     hide();
     message.success('删除成功，即将刷新');
@@ -69,6 +69,32 @@ const handleDelete = async (fields,actionRef) => {
   } catch (error) {
     hide();
     message.error('删除失败');
+    return false;
+  }
+};
+/**
+ * 运行扫描任务
+ * @param fields 
+ */
+const handleRuntask = async (fields, actionRef) => {
+  const hide = message.loading('运行扫描任务');
+  if (fields.states == '扫描中') {
+    hide();
+    message.success('扫描任务正在运行中');
+    return true;
+  }
+   
+  try {
+    await runscantask({
+      id: fields.id,
+    });
+    hide();
+    message.success('扫描任务运行成功');
+    actionRef.current.reload();
+    return true;
+  } catch (error) {
+    hide();
+    message.error('任务运行失败');
     return false;
   }
 };
@@ -84,7 +110,7 @@ const handleRemove = async selectedRows => {
 
   try {
     await removeRule({
-      key: selectedRows.map(row => row.key),
+      key: selectedRows.map(row => row.id),
     });
     hide();
     message.success('删除成功，即将刷新');
@@ -106,7 +132,8 @@ const TableList = () => {
   const actionRef = useRef();
   console.log(actionRef);
   const columns = [
-    {
+    
+        {
         title: '任务名称',
         dataIndex: 'name',
         rules: [
@@ -136,11 +163,20 @@ const TableList = () => {
             title: '仓库关键词',
             dataIndex: 'repo_keys',
             valueType: 'textarea',
-        },
+    },
+    
         {
             title: '父任务ID',
             dataIndex: 'parent_id',
-        },
+      },
+        {
+            title: '状态',
+            dataIndex:'states'
+    },
+    {
+      title: 'ID',
+      dataIndex:'id',
+    },
     {
       title: '操作',
       dataIndex: 'option',
@@ -157,7 +193,11 @@ const TableList = () => {
             删除任务
           </a>
           <Divider type="vertical" />
-          <a href="">查看任务</a>
+          <a onClick={() => {
+            console.log('recode', record);
+            console.log('actionRef', actionRef);
+            handleRuntask(record,actionRef);
+          }}>执行任务</a>
         </>
       ),
     },
@@ -167,7 +207,7 @@ const TableList = () => {
       <ProTable
         headerTitle="Github监控任务列表"
         actionRef={actionRef}
-        rowKey="key"
+        rowKey="id"
         onChange={(_, _filter, _sorter) => {
           const sorterResult = _sorter;
 
@@ -217,7 +257,7 @@ const TableList = () => {
             </a>{' '}
             项&nbsp;&nbsp;
             <span>
-              服务调用次数总计 {selectedRows.reduce((pre, item) => pre + item.callNo, 0)} 万
+              
             </span>
           </div>
         )}

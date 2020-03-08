@@ -7,6 +7,7 @@
 import dboperation
 import githubapi
 import math
+import dbscantask
 
 class search:
             
@@ -52,48 +53,53 @@ class search:
         print(status)
         print('====================================')
         
-
-        #创建扫描任务db及表
-        dbo = dboperation.dboperation()
-        dbo.createscantaskdb(id)
-        
         #判断扫描状态
         #判断是否存在parent_id，基于已有结果进行搜索
         #此处直接search code
         ii = 0
-        api = githubapi.githubapi()
-        res = api.searchcode(f_keys)
-        print(res)
-        if not res:
-            print('初始扫描异常，扫描结束')
-            return False
+        try:
+            api = githubapi.githubapi()
+            res = api.searchcode(f_keys)
+            
+            if not res:
+                print('初始扫描异常，扫描结束')
+                #设置扫描状态
+                taskdb = dbscantask.dbscantask()
+                taskdb.uptaskstatusByid(id,3)
+                return False
          
-        total_count = res['total_count']
-        pages = math.floor(total_count/100)
-        print('扫描共%s条记录，分为%s页' % (total_count,pages))
+            total_count = res['total_count']
+            pages = math.floor(total_count/100)
+            print('扫描共%s条记录，分为%s页' % (total_count,pages))
         
-        item = res['items']
-        for i in item:
-            ii = ii + 1
-            print('第%s条扫描结果' % (ii))
-            self.dealitem(i,id,f_keys,s_keys,repo_keys)
-        
-#         for i in range(2,pages+1):
-#             res = api.searchcode(f_keys,i)
-#             
-#             if not res:
-#                 print('扫描任务扫描完成，受限于1000条扫描结果')
-#                 break
-#             
-#             print('第%s页' % (i))
-#  
-#             item = res['items']
-#             for i in item:
-#                 ii = ii + 1
-#                 print('第%s条扫描结果' % (ii))
-#                 self.dealitem(i)
-         
+            item = res['items']
+            for i in item:
+                ii = ii + 1
+                self.dealitem(i,id,f_keys,s_keys,repo_keys)
+            
+            for i in range(2,pages+1):
+                res = api.searchcode(f_keys,i)
+             
+                if not res:
+                    continue
+                item = res['items']
+                for i in item:
+                    ii = ii + 1
+                    self.dealitem(i,id,f_keys,s_keys,repo_keys)
                     
+            #设置扫描状态
+            taskdb = dbscantask.dbscantask()
+            taskdb.uptaskstatusByid(id,2)
+        except Exception as e:
+            print(e)
+            #设置扫描状态
+            taskdb = dbscantask.dbscantask()
+            taskdb.uptaskstatusByid(id,3)
+        
+
+         
+        
+        print("扫描结束")            
         return True
     
     
@@ -111,9 +117,19 @@ class search:
         dbitem.openscanlist(id)
         
         rawsearch = githubapi.githubapi()
-        #如果没有二级搜索关键词，则直接处理一级扫描结果
-        s_keys = ''
-        if(s_keys == ''):
+        #如果存在二级搜索关键词
+        if(s_keys !=''):
+            content = rawsearch.getkeywords(html_url,s_keys)
+            if content !='' :
+                dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
+        #搜索仓库搜索关键词
+        if (repo_keys !=''):
+            repores = rawsearch.searchByrepo(repo_name,repo_keys)
+            repoitem = res['items']
+            for i in repoitem:
+                self.dealitem(i,id,f_keys=repo_keys,s_keys='',repo_keys='')
+                  
+        if(s_keys == '' and repo_keys == ''):
             #获取content
             content = rawsearch.getkeywords(html_url,f_keys)
             print("name=>%s %s" % (type(name),type(path)))
@@ -122,13 +138,7 @@ class search:
             print("content=>%s" % (type(content)))
             
             dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
-        else:
-            
-            content = rawsearch.getkeywords(html_url,s_keys)
-            if content !='' :
-                dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
-            else:
-                print('seconde keys search is null ' )
+           
             
         #关闭数据库连接
         dbitem.closescanlist()  
@@ -141,5 +151,4 @@ if __name__ == '__main__':
     #创建扫描任务
 #     sh.createshtask('扫描test.xyz', 'test.xyz', 'password', 'password')    
     values = sh.getshtaskinfo(2)
-    print(values[0])    
     sh.executetask(2)

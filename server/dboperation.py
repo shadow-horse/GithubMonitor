@@ -13,18 +13,7 @@ class dboperation:
         self.scantask = 'scantask'
     
     ########################################################
-    '''
-    操作main.db，插入创建的扫描任务信息
-    '''
-    def insertscantask(self,name,f_keys,s_keys,repo_keys,parent_id=0,states=0):
-        conn = sqlite3.connect(self.maindb)
-        cursor = conn.cursor()
-        sql = "insert into scantask ( name,f_keys,s_keys,repo_keys,parent_id,states) values (?,?,?,?,?,?)"
-        cursor.execute(sql,(name,f_keys,s_keys,repo_keys,parent_id,states))
-        cursor.close()
-        conn.commit()
-        conn.close()
-        print('insertscantask success......')
+   
         
     '''
     查询main.db，返回创建任务列表
@@ -43,32 +32,8 @@ class dboperation:
         
     
     ########################################################
-    '''    
-        每个扫描任务创建一个db，保存扫描任务的扫描结果
-        表结构:
-            status:标识是否需要屏蔽
-        
-    '''
-    def createscantaskdb(self,id):
-        dbname = "%s_scantask.db" % (id)
-        conn = sqlite3.connect(dbname)
-        #创建表格
-        cursor = conn.cursor()
-        
-        sql = "create table if not exists scanlist("\
-        + "id integer primary key autoincrement," \
-        + "name text," \
-        + "path text,"\
-        + "sha text,"\
-        + "html_url text,"\
-        + "repo text,"\
-        + "content text,"\
-        + "status varchar(30)"\
-        + ")"
-        cursor.execute(sql)
-        cursor.close()
-        conn.commit()
-        conn.close()
+    
+    
     '''
     保存扫描结果前，先打开存储DB，操作完成后关闭存储DB
     '''
@@ -136,7 +101,6 @@ class dboperation:
 if __name__ == '__main__':
     
     db = dboperation()
-#     db.createscantaskdb(2)
     values = db.selectscantask(2)
     print(values)
     db.openscanlist(2)

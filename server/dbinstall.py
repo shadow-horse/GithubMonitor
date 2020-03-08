@@ -39,33 +39,22 @@ def createmaindbsql():
         + ")"
     print(sql)
     cursor.execute(sql)
-    
-    #删除扫描任务表
-#     sql ="drop table scantask"
-#     cursor.execute(sql)
-
-    #初始化一条记录
-#     sql = "insert into scantask ( name,f_keys,s_keys,repo_keys,parent_id,states) values ("\
-#         + "\'扫描任务\',"\
-#         + "\'test.com vivo.xyz vmic.xyz\',"\
-#         + "\'username password passwd\',"\
-#         + "\'password: passwd:\',"\
-#         + "\'0\',"\
-#         + "\'0\'"\
-#         + ")"
-#     cursor.execute(sql)
-    
-    #查询一条记录
-#     sql = "select * from scantask"
-#     cursor.execute(sql)
-#     values = cursor.fetchall()
-#     for item in values:
-#         print(item)
-     
-     
     cursor.close()
     conn.commit()
     conn.close()
+#删除扫描任务表
+def deletescantasktable():
+    conn = sqlite3.connect("main.db")
+     #创建一个游标
+    cursor = conn.cursor()
+    sql ="drop table scantask"
+    cursor.execute(sql)
+    cursor.close()
+    conn.commit()
+    conn.close()
+ 
+     
+
     
 if __name__ == '__main__':
     createmaindbsql()

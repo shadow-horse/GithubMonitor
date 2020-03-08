@@ -31,7 +31,7 @@ class dbscantask:
         cursor = conn.cursor()
         sql = "insert into scantask ( name,f_keys,s_keys,repo_keys,parent_id,states) values ("\
             + "\'扫描任务\',"\
-            + "\'test.com vivo.xyz vmic.xyz\',"\
+            + "\'test.com \',"\
             + "\'username password passwd\',"\
             + "\'password: passwd:\',"\
         + "\'0\',"\

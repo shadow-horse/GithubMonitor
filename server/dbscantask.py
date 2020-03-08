@@ -11,7 +11,6 @@
 '''
 import sqlite3
 import json
-from matplotlib.pyplot import sca
 
 class dbscantask:
     def __init__(self):

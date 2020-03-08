@@ -5,7 +5,6 @@
     说明：后台应用，不做SQL注入防护
 '''
 import sqlite3
-from numpy.distutils.from_template import item_re
 
 class dboperation:
     def __init__(self):

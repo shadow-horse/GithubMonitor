@@ -23,6 +23,7 @@ class ScantaskList extends React.Component {
         try {
             //判断是否需要刷新页面,如果不setState无法加载新的dataSource
             if (this.state.id != this.props.id) {
+                console.log('this.props.id',this.props.id);
                 this.listData = await getscanlist(this.props.id);
                 console.log('需要刷新页面');
                 this.setState({
@@ -107,7 +108,9 @@ class ScantaskList extends React.Component {
                             description={item.keywords}
                         />
 
-                        {item.html_url}
+                        <a href={item.html_url} >{item.html_url}</a>
+                        <br/>
+                        <p>{item.content}</p>
                     </List.Item>
                 )}
             />

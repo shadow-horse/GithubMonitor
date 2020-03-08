@@ -57,7 +57,7 @@ class App extends React.Component {
       this.tasklists = await gettasklist();
 
       for (let i = 0; i < this.tasklists.length; i++) {
-        this.tasknamelist.push(<Option key={this.tasklists[i]['key']}>{this.tasklists[i]['key'] + '\t' + this.tasklists[i]['name']}</Option>);
+        this.tasknamelist.push(<Option key={this.tasklists[i]['id']}>{this.tasklists[i]['id'] + '\t' + this.tasklists[i]['name']}</Option>);
       }
 
       // console.log('getScantasklist=>tasknamelist', this.tasknamelist);

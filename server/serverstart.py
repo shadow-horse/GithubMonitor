@@ -158,7 +158,34 @@ async def runscantask(req_data:dataItem):
         return {'status':'success','message':'run success'}
     else:
         return {'status':'success','message':''}
- 
+
+'''
+获取扫描任务列表
+'''
+@app.post('/scantask/tasklist')
+async def gettasklist(method:str=None):
+    task = dbscantask.dbscantask()
+    taskdata = task.getscanlist()
+    return taskdata
+
+
+class scanlistItem(BaseModel):
+    id:str=None
+    method:str=None
+'''
+扫描任务scanlist
+'''
+@app.post('/scanlist/list')
+async def getScanlist(req_data:scanlistItem):
+    print(req_data.id)
+    db = dboperation.dboperation()
+    db.openscanlist(req_data.id)
+    values=[]
+    values = db.selectscanlistBystatus()
+    db.closescanlist()
+    return values
+
+
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app=app,

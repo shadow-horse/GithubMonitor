@@ -71,7 +71,32 @@ class dboperation:
         sql = "select * from scanlist"
         self.slcursor.execute(sql)
         values = self.slcursor.fetchall()
+        
         return values
+    
+    '''
+    获取所有需要处理的扫描结果
+    '''
+    def selectscanlistBystatus(self):
+        sql = "select * from scanlist where status = '0'"
+        self.slcursor.execute(sql)
+        values = self.slcursor.fetchall()
+        data=[]
+        
+        for item in values:
+            jsonitem={}
+            jsonitem['id']=item[0]
+            jsonitem['name']=item[1]
+            jsonitem['path']=item[2]
+            jsonitem['sha']=item[3]
+            jsonitem['html_url']=item[4]
+            jsonitem['reponame']=item[5]
+            jsonitem['content']=item[6]
+            jsonitem['disable']=False
+            jsonitem['avatar']='/github.jpg'
+            data.append(jsonitem)
+        
+        return data
     
     def selectscanlist(self,sha):
         sql = "select * from scanlist where sha =?"

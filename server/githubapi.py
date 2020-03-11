@@ -16,120 +16,121 @@ class githubapi:
         self.auth_token = 'token ' + cof.get_config_values('GITHUB', 'AUTH_TOKEN')
         self.headers = {'Authorization':self.auth_token,'Connection':'close','User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36'}
         
-        
- 
     def searchcode(self,id,page=1,per_page=100):
+        redata = ''
+        session = requests.session()
+        session.keep_alive = False
         try:
             print('search code please wait 2 second......')
             time.sleep(2)
-            self.session = requests.session()
-            #在调用github api时，不能设置keep_alive=false
-            self.session.keep_alive = False
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
-            result = self.session.get(url=url,headers=self.headers,timeout=60)
+            result = session.get(url=url,headers=self.headers,timeout=60)
+            #循环检查是否被Github限制
             if(not self.checkratelimit(result.headers)):
+                session.close()
                 return self.searchcode(id, page, per_page)
-            self.session.close()
+            
             if 'items' in result.json().keys():
-                return result.json()
+                redata =  result.json()
             else:
-                return False
+                print('searchcode items not in result.json.keys()......')
+                redata =  False
         except Exception as e:
             print('searchcode exception %s......' % (e))
-            self.session.close()
-            return False
+            redata =  False
+        
+        session.close()
+        return redata
+            
     
     def searchrepositories(self,id):
         url = 'https://api.github.com/search/repositories?q='+urllib.parse.quote(id)
-        self.session = requests.session()
-        self.session.keep_alive = False
-        result = self.session.get(url=url,headers=self.headers)
-        self.session.close()
+        session = requests.session()
+        session.keep_alive = False
+        result = session.get(url=url,headers=self.headers)
+        session.close()
         return result.json()
     
     def searchcommits(self,id):
         url = 'https://api.github.com/search/commits?q='+urllib.parse.quote(id)
-        self.session = requests.session()
-#         self.session.keep_alive = False        
-        result = self.session.get(url=url,headers=self.headers)
-        self.session.close()
+        session = requests.session()
+#         session.keep_alive = False        
+        result = session.get(url=url,headers=self.headers)
+        session.close()
         return result.json()
     
     def searchissues(self,id):
         url = 'https://api.github.com/search/issues?q='+urllib.parse.quote(id)
-        self.session = requests.session()
-#         self.session.keep_alive = False 
-        result = self.session.get(url=url,headers=self.headers)
-        self.session.close()
+        session = requests.session()
+#         session.keep_alive = False 
+        result = session.get(url=url,headers=self.headers)
+        session.close()
         return result.json() 
     
     
-    def searchrawfile(self,url):
-        #正则替换 github.com => raw.githubusercontent.com 
-        rawurl = url.replace('github.com','raw.githubusercontent.com',1).replace('/blob/','/',1)
-        time.sleep(2)
-        ses = requests.session()
-        #关闭多余连接，解决Max retries exceeded with url问题
-        ses.keep_alive = False
-        text=''
-        try:
-            result = ses.get(rawurl,timeout = 30)
-            self.checkratelimit(result.headers)
-            text = result.text
-        except Exception as e:
-            print('searchrawfile exception %s......' % (e))
-            #如果获取源文件失败，则返回以下内容，默认记录到扫描结果中，以便操作人去访问连接并检查
-            text = 'Get raw file failed, please access the link.'
-        ses.close()
-        return text
+
     
     def searchfilename(self,repo,name,path,id):
         #通过API接口搜索具体的文件，具体的path，具体的仓库
+        resdata = ''
         path = path[:path.rfind('/')]
-        url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' path:' +path+ ' filename:'+name +' repo:'+repo + '&sort=indexed&order=desc'
-        self.session = requests.session()
-        self.session.keep_alive = False 
+        url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ '+path:' +path+ '+filename:'+name +'+repo:'+repo + '&sort=indexed&order=desc'
+        session = requests.session()
+        session.keep_alive = False 
         try:
-            result = self.session.get(url=url,headers=self.headers)
+            result = session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):
+                session.close()
                 return self.searchfilename(repo, name, path,id)
             
-            self.session.close()
             if 'items' in result.json().keys():
-                return result.json()
+                if result.json()['total_count'] > 0 :
+                    resdata = True
+                else:
+                    resdata =  False
             else:
-                return False
+                print('searchfilename items not in result.json().keys.')
+                resdata =  True  #如果异常或访问失败，默认记录
         
         except Exception as e:
             print('searchfilename exception %s......' % (e))
-            self.session.close()
-            return False
-    
+            resdata = True      #如果异常或访问失败，默认记录
+        session.close()
+        return resdata
+        
     #在仓库中搜索关键词
     def searchByrepo(self,repo,id):
-        url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ ' repo:'+repo + '&sort=indexed&order=desc'
-        self.session = requests.session()
-        self.session.keep_alive = False 
+        resdata = ''
+        url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+ '+repo:'+repo + '&sort=indexed&order=desc'
+        session = requests.session()
+        session.keep_alive = False 
         try:
-            result = self.session.get(url=url,headers=self.headers)
+            result = session.get(url=url,headers=self.headers)
             if(not self.checkratelimit(result.headers)):
+                session.close()
                 return self.searchByrepo(repo,id)
             
-            self.session.close()
             if 'items' in result.json().keys():
-                return result.json()
+                resdata =  result.json()
             else:
-                return False
+                print('searchByrepo items not in result.json().keys')
+                resdata =  False
         
         except Exception as e:
             print('searchByrepo exception %s......' % (e))
-            self.session.close()
-            return False
+            resdata =  False
+        
+        session.close()
+        return resdata
     
     def getkeywords(self,html_url,id):
         #确定该文件需要展示时，调用该方法获取存在搜索关键词的代码片段，发现代码片段后，取前一行和后一行进行拼接
         rawcontent = self.searchrawfile(html_url)
+        if(not rawcontent):
+            result = 'Get rawfile failed. Please click the link.'
+            return result
+        
         content = rawcontent.split('\n')
         #返回查询结果，如果查询结果超过5个，则终止，以免内容过多
         result = ''
@@ -144,12 +145,29 @@ class githubapi:
                 result = result + '%s:%s\n\n' %(index,line)
         #如果result为空，意味着没有搜索到关键词，但是应该能搜索到，故设置result=content
         if result == '':
-            result = 'search content is null.'
-#         print(result)
+            result = 'file search content is null.'
         return result
+
+    def searchrawfile(self,url):
+        #正则替换 github.com => raw.githubusercontent.com 
+        rawurl = url.replace('github.com','raw.githubusercontent.com',1).replace('/blob/','/',1)
+        time.sleep(2)
+        ses = requests.session()
+        #关闭多余连接，解决Max retries exceeded with url问题
+        ses.keep_alive = False
+        text=''
+        try:
+            result = ses.get(rawurl,timeout = 30)
+            print(result.headers)
+#             self.checkratelimit(result.headers)
+            text = result.text
+        except Exception as e:
+            print('searchrawfile exception %s......' % (e))
+            #如果获取源文件失败，则返回以下内容，默认记录到扫描结果中，以便操作人去访问连接并检查
+            text = False
+        ses.close()
+        return text
     
-    def close(self):
-        self.session.close()
     
     def checkratelimit(self,headers):
         if 'X-RateLimit-Remaining' in headers.keys():
@@ -185,7 +203,7 @@ if __name__ == '__main__':
 #         print(i['sha'])
 #         print(i['html_url'])
 #         print(i['repository']['full_name'])
-    res = api.searchByrepo('influencer-checker/influencer-checker.github.io', 'hello.com.cn')
+    res = api.searchByrepo('Mynameisfwk/vivo-shop', 'liugaoren')
     print(res)
 #     time.sleep(2)
 #     print('===========================')
@@ -200,6 +218,6 @@ if __name__ == '__main__':
 #     res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/vivo.com.cn/vivo.com.cn-subdomain.txt', 'vivo.com.cn')
 #     print(res)
 #     time.sleep(5)
-#     res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','维沃移动')
-#     print(res)
+    res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','liuyifeng')
+    print(res)
    

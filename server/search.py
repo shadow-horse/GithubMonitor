@@ -102,7 +102,16 @@ class search:
         print("扫描结束")            
         return True
     
-    
+    #插入数据
+    def insertdata(self,id,name,path,sha,html_url,repo_name,content):
+        dbitem = dboperation.dboperation()
+        #打开数据库连接
+        dbitem.openscanlist(id)
+        dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
+        #关闭数据库连接
+        dbitem.closescanlist()
+        return True
+   
     def dealitem(self,item,id,f_keys,s_keys='',repo_keys=''):
         name = item['name']
         path = item['path']
@@ -110,39 +119,26 @@ class search:
         html_url = item['html_url']
         repo_name = item['repository']['full_name']
         content = ''
-            
-        dbitem = dboperation.dboperation()
-        #打开数据库连接
-        print("打开数据库")
-        dbitem.openscanlist(id)
         
         rawsearch = githubapi.githubapi()
         #如果存在二级搜索关键词
         if(s_keys !=''):
-            content = rawsearch.getkeywords(html_url,s_keys)
-            if content !='' :
-                dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
+            content = f_keys + '\r\n' + s_keys
+            flag = rawsearch.searchfilename(repo = repo_name,name= name,path=path,id=s_keys)
+            if flag :
+                self.insertdata(id,name,path,sha,html_url,repo_name,content)
         #搜索仓库搜索关键词
         if (repo_keys !=''):
+            content = f_keys + '\r\n' + repo_keys
             repores = rawsearch.searchByrepo(repo_name,repo_keys)
-            repoitem = res['items']
-            for i in repoitem:
-                self.dealitem(i,id,f_keys=repo_keys,s_keys='',repo_keys='')
+            if(repores != False):
+                repoitem = res['items']
+                for i in repoitem:
+                    self.dealitem(i,id,f_keys=content,s_keys='',repo_keys='')
                   
         if(s_keys == '' and repo_keys == ''):
-            #获取content
-            content = rawsearch.getkeywords(html_url,f_keys)
-            print("name=>%s %s" % (type(name),type(path)))
-            print("url=>%s" % (type(html_url)))
-            print("repo=>%s" % (type(repo_name)))
-            print("content=>%s" % (type(content)))
-            
-            dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
-           
-            
-        #关闭数据库连接
-        dbitem.closescanlist()  
-        print("关闭数据库")      
+            self.insertdata(id,name,path,sha,html_url,repo_name,f_keys)
+     
         return True
 
 if __name__ == '__main__':

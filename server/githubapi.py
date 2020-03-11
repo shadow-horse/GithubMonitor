@@ -203,19 +203,19 @@ if __name__ == '__main__':
 #         print(i['sha'])
 #         print(i['html_url'])
 #         print(i['repository']['full_name'])
-    res = api.searchByrepo('Mynameisfwk/vivo-shop', 'liugaoren')
+    res = api.searchByrepo('Mynameisfwk', 'liugaoren')
     print(res)
 #     time.sleep(2)
 #     print('===========================')
 #     for i in range(2,pages+1):
-#         res = api.searchcode('vivo.com.cn',i)
+#         res = api.searchcode('test.com.cn',i)
 #         items = res['items']
 #         for i in items:
 #             print(i['name'])
 #         break
 #     time.sleep(2)
 #     print("===========================")
-#     res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/vivo.com.cn/vivo.com.cn-subdomain.txt', 'vivo.com.cn')
+#     res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/test.com.cn/test.com.cn-subdomain.txt', 'test.com.cn')
 #     print(res)
 #     time.sleep(5)
     res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','liuyifeng')

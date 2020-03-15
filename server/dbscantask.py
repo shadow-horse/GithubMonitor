@@ -204,6 +204,7 @@ class dbscantask:
      
 if __name__=='__main__':
     scantask = dbscantask()
-    scantask.queryscanlist('扫描')
-    scantask.getscanlist(current='1', pageSize='10')
-    scantask.getscanlistnums()
+#     scantask.queryscanlist('扫描')
+#     scantask.getscanlist(current='1', pageSize='10')
+#     scantask.getscanlistnums()
+    scantask.uptaskstatusByid(3,3)

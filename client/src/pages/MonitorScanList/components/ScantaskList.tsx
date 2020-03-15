@@ -129,7 +129,7 @@ class ScantaskList extends React.Component {
                             description={item.keywords}
                         />
 
-                        <a href={item.html_url} >{item.html_url}</a>
+                        <a target="_blank" href={item.html_url} >{item.html_url}</a>
                         <br/>
                         <p>{item.content}</p>
                     </List.Item>

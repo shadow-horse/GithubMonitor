@@ -69,13 +69,14 @@ class search:
                 return False
          
             total_count = res['total_count']
-            pages = math.floor(total_count/100)
+            pages = math.floor(total_count/100) + 1
             print('扫描共%s条记录，分为%s页' % (total_count,pages))
-        
+            
             item = res['items']
+            reponame=''
             for i in item:
                 ii = ii + 1
-                self.dealitem(i,id,f_keys,s_keys,repo_keys)
+                reponame = self.dealitem(i,id,f_keys,s_keys,repo_keys,reponame=reponame)
             
             for i in range(2,pages+1):
                 res = api.searchcode(f_keys,i)
@@ -85,7 +86,7 @@ class search:
                 item = res['items']
                 for i in item:
                     ii = ii + 1
-                    self.dealitem(i,id,f_keys,s_keys,repo_keys)
+                    reponame = self.dealitem(i,id,f_keys,s_keys,repo_keys,reponame=reponame)
                     
             #设置扫描状态
             taskdb = dbscantask.dbscantask()
@@ -96,55 +97,80 @@ class search:
             taskdb = dbscantask.dbscantask()
             taskdb.uptaskstatusByid(id,3)
         
-
-         
-        
         print("扫描结束")            
         return True
     
     #插入数据
-    def insertdata(self,id,name,path,sha,html_url,repo_name,content):
+    def insertdata(self,id,name,path,sha,html_url,repo_name,content,flag='0'):
         dbitem = dboperation.dboperation()
         #打开数据库连接
         dbitem.openscanlist(id)
-        dbitem.insertscanlist(name,path,sha,html_url,repo_name,content)
+        dbitem.insertscanlist(name,path,sha,html_url,repo_name,content,flag)
         #关闭数据库连接
         dbitem.closescanlist()
         return True
    
-    def dealitem(self,item,id,f_keys,s_keys='',repo_keys=''):
+    def md5isExist(self,id,md5):
+        db = dboperation.dboperation()
+        result = db.md5isExist(id,md5)
+        return result
+    
+    def dealitem(self,item,id,f_keys,s_keys='',repo_keys='',flag='0',reponame=''):  
         name = item['name']
         path = item['path']
         sha = item['sha']
         html_url = item['html_url']
         repo_name = item['repository']['full_name']
-        content = ''
+        content = f_keys
+        
+        #判断文件是否已经在数据库中减少搜索访问
+        if(self.md5isExist(id, sha)):
+            print('文件存在: ' + path)
+            return repo_name
         
         rawsearch = githubapi.githubapi()
         #如果存在二级搜索关键词
         if(s_keys !=''):
-            content = f_keys + '\r\n' + s_keys
-            flag = rawsearch.searchfilename(repo = repo_name,name= name,path=path,id=s_keys)
-            if flag :
-                self.insertdata(id,name,path,sha,html_url,repo_name,content)
+            #二级搜索关键词需要按照|拆分分别去扫描
+            s_keys_d = []
+            s_keys_d = s_keys.split('|')
+            for key in s_keys_d:
+                if(key != ''):
+                    result = rawsearch.searchfilename(repo = repo_name,name= name,path=path,id=key)
+                    if result :
+                        content = f_keys + '\r\n' + key
+                        self.insertdata(id,name,path,sha,html_url,repo_name,content,flag=1)
+        
+        
         #搜索仓库搜索关键词
-        if (repo_keys !=''):
-            content = f_keys + '\r\n' + repo_keys
-            repores = rawsearch.searchByrepo(repo_name,repo_keys)
-            if(repores != False):
-                repoitem = res['items']
-                for i in repoitem:
-                    self.dealitem(i,id,f_keys=content,s_keys='',repo_keys='')
+        #判断仓库是否已经搜索过reponame为上一次调用返回的仓库名称
+
+        if (repo_keys !='' and reponame != repo_name):
+            print('搜索仓库'+repo_name)
+            #仓库关键词按照|拆分
+            repo_keys_d = []
+            repo_keys_d = repo_keys.split('|')
+            for key in repo_keys_d:
+                if(key !=''):
+                    repores = rawsearch.searchByrepo(repo_name,key)
+                    if(repores != False):
+                        content = f_keys + '\r\n' + key
+                        repoitem = repores['items']
+                        for i in repoitem:
+                            self.dealitem(i,id,f_keys=content,s_keys='',repo_keys='',flag=2)
+        
+        
                   
         if(s_keys == '' and repo_keys == ''):
-            self.insertdata(id,name,path,sha,html_url,repo_name,f_keys)
+            content = f_keys
+            self.insertdata(id,name,path,sha,html_url,repo_name,content,flag)
      
-        return True
+        return repo_name
 
 if __name__ == '__main__':
     print('search......')
-    sh = search()
-    #创建扫描任务
-#     sh.createshtask('扫描test.xyz', 'test.xyz', 'password', 'password')    
-    values = sh.getshtaskinfo(2)
-    sh.executetask(2)
+#     sh = search()
+#     #创建扫描任务
+# #     sh.createshtask('扫描test.xyz', 'test.xyz', 'password', 'password')    
+#     values = sh.getshtaskinfo(2)
+#     sh.executetask(2)

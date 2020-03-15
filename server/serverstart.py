@@ -171,6 +171,9 @@ async def gettasklist(method:str=None):
 
 class scanlistItem(BaseModel):
     id:str=None
+    taskid:str=None
+    scanlistid:str=None
+    status:str=None
     method:str=None
 '''
 扫描任务scanlist
@@ -181,10 +184,20 @@ async def getScanlist(req_data:scanlistItem):
     db = dboperation.dboperation()
     db.openscanlist(req_data.id)
     values=[]
-    values = db.selectscanlistBystatus()
+    values = db.selectscanlistBystatus(req_data.status)
     db.closescanlist()
     return values
 
+'''
+标记误报处理结果
+'''
+@app.post('/scanlist/deleteid')
+async def updateScanlistStatus(req_data:scanlistItem):
+    db = dboperation.dboperation()
+    db.openscanlist(req_data.taskid)
+    db.updatescanlistByid(req_data.scanlistid,req_data.status);
+    db.closescanlist()
+    
 
 if __name__ == '__main__':
     import uvicorn

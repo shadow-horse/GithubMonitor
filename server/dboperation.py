@@ -159,6 +159,20 @@ class dboperation:
         sql = "update scanlist set status=? where id=?"
         self.slcursor.execute(sql,(status,id))
         return True
+    
+    '''
+    更新所有未处理的条目为忽略
+    '''
+    def updateallignore(self,status):
+        sql = "update scanlist set status=? where status=0"
+        self.slcursor.execute(sql,(status))
+        
+        sql = "update scanlist set status=? where status=1"
+        self.slcursor.execute(sql,(status))
+         
+        sql = "update scanlist set status=? where status=2"
+        self.slcursor.execute(sql,(status))
+        return True
         
     '''
     删除某条记录

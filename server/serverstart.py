@@ -189,7 +189,7 @@ async def getScanlist(req_data:scanlistItem):
     return values
 
 '''
-标记误报处理结果
+标记处理结果
 '''
 @app.post('/scanlist/deleteid')
 async def updateScanlistStatus(req_data:scanlistItem):
@@ -197,7 +197,16 @@ async def updateScanlistStatus(req_data:scanlistItem):
     db.openscanlist(req_data.taskid)
     db.updatescanlistByid(req_data.scanlistid,req_data.status);
     db.closescanlist()
-    
+
+'''
+所有未待处理的标记为忽略
+'''    
+@app.post('/scanlist/updateallignore')
+async def updateallignore(req_data:scanlistItem):
+    db = dboperation.dboperation()
+    db.openscanlist(req_data.id)
+    db.updateallignore(req_data.status);
+    db.closescanlist()
 
 if __name__ == '__main__':
     import uvicorn

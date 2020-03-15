@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./FormCoordinated.less";
-import { Form, Select, Input, Button, message } from "antd";
-import { gettasklist} from '../service';
+import { Form, Select, Input, Button, message,Modal } from "antd";
+import { gettasklist,updateallignore} from '../service';
 
 
 const { Option } = Select;
@@ -14,6 +14,7 @@ class App extends React.Component {
     super(props);
     this.state = {
       data: props.data,
+      visible: false,
     }
   }
 
@@ -25,6 +26,34 @@ class App extends React.Component {
     });
   }
 
+  /**
+   * 弹框确认
+   */
+  showModal = () => {
+    this.setState({
+      visible: true,
+    });
+  };
+  //确认后将所有未处理的条目标记为误报
+handleOk =  async (e) => {
+    const taskname = this.props.form.getFieldValue('taskname')
+    this.setState({
+      visible: false,
+    });
+
+    try {
+        await updateallignore(taskname, '3');
+    } catch{
+      message.error('忽略所有操作失败');
+    }
+     
+  };
+
+  handleCancel = e => {
+    this.setState({
+      visible: false,
+    });
+  };
 
 
   /**
@@ -113,9 +142,9 @@ class App extends React.Component {
             >
 
               {this.tasknamelist}
-
             </Select>
           )}
+          
         </Form.Item>
         <Form.Item wrapperCol={{ span: 12, offset: 3 }}>
           <Button type="primary" htmlType="submit" onClick={this.handleSubmit}>
@@ -129,8 +158,28 @@ class App extends React.Component {
           <Button type="dashed" htmlType="submit" onClick={this.handleIgnoremsg}>
             已忽略
           </Button>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          
+          <Button type="danger" htmlType="submit" onClick={this.showModal}>待处理全部标记为忽略</Button>
+          <Modal
+            title="请确认是否忽略所有待处理扫描结果"
+            visible={this.state.visible}
+            onOk={this.handleOk}
+            onCancel={this.handleCancel}
+          >
+            <p>请谨慎操作：</p>
+            <p>1. 操作后无法恢复</p>
+            <p>2. 可能存在风险被忽略处理</p>
+         
+          </Modal>
         </Form.Item>
       </Form>
+     
     );
   }
 }

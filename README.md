@@ -91,9 +91,9 @@ Python配置环境依赖：
 
 ### 4. 效果图 
 
-1. 访问页面：http://127.0.0.1:8000/welcome
-
-2. 
-
+1. 访问任务列表：http://127.0.0.1:8000/welcome
+	![](https://github.com/shadow-horse/GithubMonitor/blob/master/img/tasklist.png)
+2. 访问任务的扫描结果
+	![](https://github.com/shadow-horse/GithubMonitor/blob/master/img/scanlist.png)
 
 

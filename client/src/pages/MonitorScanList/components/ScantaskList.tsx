@@ -1,6 +1,7 @@
 import React from "react";
 import { List, Avatar, Icon, message, Button } from 'antd';
-import { getscanlist } from '../service';
+import { getscanlist ,updatescanlist} from '../service';
+import Item from "antd/lib/list/Item";
 
 class ScantaskList extends React.Component {
 
@@ -13,6 +14,7 @@ class ScantaskList extends React.Component {
         super(props);
         this.state = {
             id: props.id,
+            status:props.status,
         }
     }
 
@@ -20,14 +22,20 @@ class ScantaskList extends React.Component {
     listData = [];
     getScanList = async () => {
         console.log('getScanList');
+        console.log('this.props.status', this.props.status);
+        console.log('this.props.id', this.props.id);
+        console.log('this.state.id', this.state.id);
+        console.log('this.state.status', this.state.status);
+
         try {
             //判断是否需要刷新页面,如果不setState无法加载新的dataSource
-            if (this.state.id != this.props.id) {
+            if ((this.state.id != this.props.id) || (this.state.status != this.props.status)) {
                 console.log('this.props.id',this.props.id);
-                this.listData = await getscanlist(this.props.id);
+                this.listData = await getscanlist(this.props.id,this.props.status);
                 console.log('需要刷新页面');
                 this.setState({
                     id: this.props.id,
+                    status: this.props.status,
                     disable:false,
                 });
                 
@@ -42,33 +50,46 @@ class ScantaskList extends React.Component {
     };
 
     //删除误报或忽略的扫描结果
-    handleRemovelist = item => {
+    handleRemovelist = async(item,status) => {
         // 使用此组件可以将button设置为disabled=true,但是刷新数据时无法恢复
         // event.target.disabled = true;
         console.log(event?.currentTarget);
-        let delindex = -1;
-        const tempData = [];
-        for (let i = 0; i < this.listData.length; i++)
-        {
-            if (item.id === this.listData[i].id) {
-                console.log('success');
-                delindex = i;
-            } else {
-                tempData.push(this.listData[i]);
+
+        console.log('taskid:', this.props.id);
+        console.log("scanlistid:", item.id);
+        console.log("scanlistid:", status);
+        //请求服务端，标记为误报
+        try {
+            await updatescanlist(this.props.id, item.id,status);
+            message.success("标记误报成功");
+
+            //本地删除
+            let delindex = -1;
+            const tempData = [];
+            for (let i = 0; i < this.listData.length; i++)
+            {
+                if (item.id === this.listData[i].id) {
+                    console.log('success');
+                    delindex = i;
+                } else {
+                    tempData.push(this.listData[i]);
+                }
             }
+            //更新dataSource
+            this.listData = tempData;
+            this.setState({
+                dataSource:this.listData,
+            });
+        }catch {
+            message.success("标记误报异常");
         }
-        //更新dataSource
-        this.listData = tempData;
-        this.setState({
-            dataSource:this.listData,
-        });
+
+        
     
     };
 
     render() {
-        console.log('render');
-
-
+       
         this.getScanList();
 
         const IconText = ({ type, text }) => (
@@ -97,8 +118,8 @@ class ScantaskList extends React.Component {
                         key={item.id}
                         actions={[
                             //onClick事件需要bind方法，否则渲染时默认全部执行
-                            <Button type="primary" disabled={item.disable} onClick={this.handleRemovelist.bind(this,item)}>处理</Button>,
-                            <Button type="danger" onClick={this.handleRemovelist.bind(this,item)}>忽略</Button>,
+                            <Button type="primary" disabled={item.disable} onClick={this.handleRemovelist.bind(this,item,'4')}>标记已处理</Button>,
+                            <Button type="danger" onClick={this.handleRemovelist.bind(this,item,'3')}>标记忽略</Button>,
 
                         ]}
                     >

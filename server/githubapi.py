@@ -26,16 +26,16 @@ class githubapi:
             url = 'https://api.github.com/search/code?q='+urllib.parse.quote(id)+'&sort=indexed&order=desc'
             url = '%s&page=%s&per_page=%s' %(url,page,per_page)
             result = session.get(url=url,headers=self.headers,timeout=60)
-            #循环检查是否被Github限制
-            if(not self.checkratelimit(result.headers)):
+            #循环检查是否被Github限制，如股限制则重新进行请求
+            if(self.checkratelimit(result.headers)):
                 session.close()
-                return self.searchcode(id, page, per_page)
-            
-            if 'items' in result.json().keys():
-                redata =  result.json()
+                redata =  self.searchcode(id, page, per_page)
             else:
-                print('searchcode items not in result.json.keys()......')
-                redata =  False
+                if 'items' in result.json().keys():
+                    redata =  result.json()
+                else:
+                    print('searchcode items not in result.json.keys()......')
+                    redata =  False
         except Exception as e:
             print('searchcode exception %s......' % (e))
             redata =  False
@@ -80,7 +80,7 @@ class githubapi:
         session.keep_alive = False 
         try:
             result = session.get(url=url,headers=self.headers)
-            if(not self.checkratelimit(result.headers)):
+            if(self.checkratelimit(result.headers)):
                 session.close()
                 return self.searchfilename(repo, name, path,id)
             
@@ -107,15 +107,15 @@ class githubapi:
         session.keep_alive = False 
         try:
             result = session.get(url=url,headers=self.headers)
-            if(not self.checkratelimit(result.headers)):
+            if(self.checkratelimit(result.headers)):
                 session.close()
-                return self.searchByrepo(repo,id)
-            
-            if 'items' in result.json().keys():
-                resdata =  result.json()
+                resdata = self.searchByrepo(repo,id)
             else:
-                print('searchByrepo items not in result.json().keys')
-                resdata =  False
+                if 'items' in result.json().keys():
+                    resdata =  result.json()
+                else:
+                    print('searchByrepo items not in result.json().keys')
+                    resdata =  False
         
         except Exception as e:
             print('searchByrepo exception %s......' % (e))
@@ -173,51 +173,59 @@ class githubapi:
         if 'X-RateLimit-Remaining' in headers.keys():
             remaining = headers['X-RateLimit-Remaining']
             if remaining == '1':
-                print('ratelimit please wait 60 seconds......')
+                print('ratelimit=1 please wait 30 seconds......')
                 time.sleep(30)
+                return True
+            if remaining == '0':
+                print('ratelimit=0 please wait 5 seconds......')
+                time.sleep(5)
                 return True
             
         if 'Retry-After' in headers.keys():
             retry_after = headers['Retry-After']
             print('Retry-After please wait %s seconds......' % (retry_after))
             time.sleep(int(retry_after))
-            return False
-        return True
+            return True
+        return False
     
     
 if __name__ == '__main__':
     api = githubapi()
     
-    res = api.searchcode('hello.com.cn')
+    res = api.searchcode('helloworld')
     total_count = res['total_count']
-    pages = math.floor(total_count/100)
+    pages = math.floor(total_count/100) + 1
     print(pages)
+    pages = 3
     items = res['items']
-    print(res)
+#     print(res)
     ii = 0
-#     for i in items:
-#         ii = ii+1
-#         print(ii)
-#         print(i['name'])
+    for i in items:
+        ii = ii+1
+        print(i['name'])
 #         print(i['path'])
 #         print(i['sha'])
 #         print(i['html_url'])
 #         print(i['repository']['full_name'])
-    res = api.searchByrepo('Mynameisfwk', 'liugaoren')
-    print(res)
+        
+#     res = api.searchByrepo('Mynameisfwk', 'liugaoren')
+#     print(res)
 #     time.sleep(2)
 #     print('===========================')
-#     for i in range(2,pages+1):
-#         res = api.searchcode('test.com.cn',i)
-#         items = res['items']
-#         for i in items:
-#             print(i['name'])
-#         break
+    for i in range(2,pages+1):
+        print('-----------------------------------')
+        res = api.searchcode('helloworld',page = i)
+        items = res['items']
+        for j in items:
+            ii = ii+1
+            print(j['name'])
+        
+
 #     time.sleep(2)
 #     print("===========================")
 #     res = api.getkeywords('https://github.com/starnightcyber/subDomains/blob/b340e23eee2c0fa9332256a2c458f3d53a3f3962/test.com.cn/test.com.cn-subdomain.txt', 'test.com.cn')
 #     print(res)
 #     time.sleep(5)
-    res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','liuyifeng')
-    print(res)
+#     res = api.searchfilename('Even521/spring-boot-sample', 't_company.sql', 'spring-boot-demo/spring-boot-quartz/src/main/resources/db/t_company.sql','liuyifeng')
+#     print(res)
    

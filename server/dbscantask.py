@@ -130,6 +130,7 @@ class dbscantask:
         0:未扫描
         1:扫描中
         2:扫描结束
+        3:异常结束
     '''
     def uptaskstatusByid(self,id,states):
         conn = sqlite3.connect(self.maindb)
@@ -166,6 +167,29 @@ class dbscantask:
         cursor.close()
         conn.close()
         return data
+    
+    #获取所有扫描任务
+    def getalltasklist(self):
+        conn = sqlite3.connect(self.maindb)
+        cursor = conn.cursor()
+        sql = "select * from scantask "
+        cursor.execute(sql)
+        values = cursor.fetchall() 
+        jsondata = []
+        if(len(values) > 0):
+            for value in values:
+                itemjson = {}
+                itemjson['id'] = value[0]
+                itemjson['name'] = value[1]
+                itemjson['f_keys']= value[2]
+                itemjson['s_keys']= value[3]
+                itemjson['repo_keys']= value[4]
+                itemjson['parent_id']= value[5]
+                itemjson['states']= value[6]
+                jsondata.append(itemjson)
+        cursor.close()
+        conn.close()
+        return jsondata
     
     def getscanlistnums(self):
         conn = sqlite3.connect(self.maindb)

@@ -177,8 +177,8 @@ class githubapi:
                 time.sleep(30)
                 return True
             if remaining == '0':
-                print('ratelimit=0 please wait 5 seconds......')
-                time.sleep(5)
+                print('ratelimit=0 please wait 10 seconds......')
+                time.sleep(10)
                 return True
             
         if 'Retry-After' in headers.keys():
@@ -186,6 +186,10 @@ class githubapi:
             print('Retry-After please wait %s seconds......' % (retry_after))
             time.sleep(int(retry_after))
             return True
+        if 'Status' in headers.keys():
+            if(headers['Status'] == '403 Forbidden'):
+                time.sleep(10)
+                return True
         return False
     
     

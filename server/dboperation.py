@@ -55,17 +55,16 @@ class dboperation:
            2:仓库搜索词搜索到
            3:标识为误报
            4:标识为需要处理
+           5:关键文件
     '''     
     def insertscanlist(self,name,path,sha,html_url,repo,content,flag='0'):
         
         #判断数据是否存在
-        sql = "select id from scanlist where sha = ?"
-        self.slcursor.execute(sql,[(sha)])
+        sql = "select id from scanlist where sha = ? and html_url=?"
+        self.slcursor.execute(sql,(sha,html_url))
         values = self.slcursor.fetchall()
         if len(values) != 0:
-            print('数据已经存在 %s......' % sha)
             return False
-        
         sql = "insert into scanlist(name,path,sha,html_url,repo,content,status) values(?,?,?,?,?,?,?);"
         self.slcursor.execute(sql,(name,path,sha,html_url,repo,content,flag))
         return True
@@ -87,8 +86,24 @@ class dboperation:
         data=[]
         #r如果搜索待处理的结果，需要先获取status=1和status=2的数据
         if(status == '0'):
-            #先获取二级搜索关键结果
-            sql = "select * from scanlist where status = '1'"
+            #先获取关键文件结果
+            sql = "select * from scanlist where status = '5' order by id desc"
+            self.slcursor.execute(sql)
+            values = self.slcursor.fetchall()
+            for item in values:
+                jsonitem={}
+                jsonitem['id']=item[0]
+                jsonitem['name']=item[1]
+                jsonitem['path']=item[2]
+                jsonitem['sha']=item[3]
+                jsonitem['html_url']=item[4]
+                jsonitem['reponame']=item[5]
+                jsonitem['content']=item[6]
+                jsonitem['disable']=False
+                jsonitem['avatar']='/github.jpg'
+                data.append(jsonitem)
+            #获取二级搜索关键结果
+            sql = "select * from scanlist where status = '1' order by id desc"
             self.slcursor.execute(sql)
             values = self.slcursor.fetchall()
             for item in values:
@@ -104,7 +119,7 @@ class dboperation:
                 jsonitem['avatar']='/github.jpg'
                 data.append(jsonitem)
             #在获取仓库搜索关键词
-            sql = "select * from scanlist where status = '2'"
+            sql = "select * from scanlist where status = '2' order by id desc"
             self.slcursor.execute(sql)
             values = self.slcursor.fetchall()        
             for item in values:
@@ -120,7 +135,7 @@ class dboperation:
                 jsonitem['avatar']='/github.jpg'
                 data.append(jsonitem)
         #根据status查询结果    
-        sql = "select * from scanlist where status = ?"
+        sql = "select * from scanlist where status = ? order by id desc"
         self.slcursor.execute(sql,[(status)])
         values = self.slcursor.fetchall()
         for item in values:
@@ -172,6 +187,10 @@ class dboperation:
          
         sql = "update scanlist set status=? where status=2"
         self.slcursor.execute(sql,(status))
+        
+        sql = "update scanlist set status=? where status=5"
+        self.slcursor.execute(sql,(status))
+        
         return True
         
     '''
@@ -181,13 +200,18 @@ class dboperation:
         sql = "delete from scanlist where id =?"
         self.slcursor.execute(sql,[(id)])
         return True
+    
+    def delescanlistBysha(self,sha,html_url):
+        sql = "delete from scanlist where sha =? and html_url=?"
+        self.slcursor.execute(sql,(sha,html_url))
+        return True
     '''
     判断文件的MD5值是否已经存在
     '''
-    def md5isExist(self,id,md5):
+    def md5isExist(self,id,md5,htmlurl):
         self.openscanlist(id)
-        sql = "select id from scanlist where sha = ?"
-        self.slcursor.execute(sql,[(md5)])
+        sql = "select id from scanlist where sha = ? and html_url = ?"
+        self.slcursor.execute(sql,(md5,htmlurl))
         values = self.slcursor.fetchall()
         self.closescanlist()
         if len(values) != 0:

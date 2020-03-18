@@ -62,7 +62,7 @@ class dataItem(BaseModel):
     s_keys: str=''
     repo_keys: str=''
     parent_id: str='0'
-#     states: str=None
+    states: str='0'
     method: str='0'
     
 '''
@@ -80,12 +80,24 @@ class dataItem(BaseModel):
 async def addmonitortask(req_data:dataItem):
     db = dbscantask.dbscantask()
     #创建扫描任务
-    if(req_data.method == 'post'):
+    if(req_data.method == 'post' and req_data.id == None):
         #插入扫描任务
         id = db.insertscantask(name=req_data.name,f_keys=req_data.f_keys,s_keys=req_data.s_keys,repo_keys=req_data.repo_keys,parent_id=req_data.parent_id)
         #创建扫描任务数据库
         db.createscantaskdb(id)
         
+        jsonitem={}
+        jsonitem['id'] = id
+        jsonitem['name'] = req_data.name
+        jsonitem['f_keys'] = req_data.f_keys
+        jsonitem['s_keys'] = req_data.s_keys
+        jsonitem['repo_keys'] = req_data.repo_keys
+        jsonitem['parent_id'] = req_data.parent_id
+        jsonitem['states'] = 0
+        return jsonitem
+    elif (req_data.method == 'post' and req_data.id != None):
+        #更新扫描任务
+        id = db.updatescantask(id=req_data.id,name=req_data.name,f_keys=req_data.f_keys,s_keys=req_data.s_keys,repo_keys=req_data.repo_keys,parent_id=req_data.parent_id,states=req_data.states)
         jsonitem={}
         jsonitem['id'] = id
         jsonitem['name'] = req_data.name

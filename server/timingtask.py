@@ -2,6 +2,7 @@
 
 '''
 定时扫描任务:每隔固定时间则遍历执行
+目的：监控新增
 '''
 
 import dboperation
@@ -16,7 +17,7 @@ import time
 class timingtask:
     def __init__(self):
         #设置时间间隔：分钟
-        self.timeinterval = 60 * 60 * 2
+        self.timeinterval = 60 * 60
         
     def gettasklist(self):
         db = dbscantask.dbscantask()
@@ -32,7 +33,7 @@ class timingtask:
         db.uptaskstatusByid(item['id'],'1')
         
         sea =  search.search()
-        sea.executetask(item['id'])
+        sea.timingtask(item['id'])
         return True
     
     def run(self):

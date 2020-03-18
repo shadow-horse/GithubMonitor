@@ -6,7 +6,7 @@ const CreateForm = props => {
   return (
     <Modal
       destroyOnClose
-      title="新建Github监控扫描任务"
+      title="新建监控扫描任务 | 配置ID修改扫描任务"
       visible={modalVisible}
       onCancel={() => onCancel()}
       footer={null}

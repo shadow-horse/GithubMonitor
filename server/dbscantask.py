@@ -58,6 +58,34 @@ class dbscantask:
         return value[0]
     
     '''
+    更新扫描任务
+    '''
+    def updatescantask(self,id,name,f_keys,s_keys,repo_keys,parent_id,states):
+        conn = sqlite3.connect(self.maindb)
+        cursor = conn.cursor()
+        if(name !=''):
+            sql = 'update scantask set name=? where id=?'
+            cursor.execute(sql,(name,id))
+        if(f_keys !=''):
+            sql = 'update scantask set f_keys=? where id=?'
+            cursor.execute(sql,(f_keys,id))
+        if(s_keys !=''):
+            sql = 'update scantask set s_keys=? where id=?'
+            cursor.execute(sql,(s_keys,id))
+        if(repo_keys !=''):
+            sql = 'update scantask set repo_keys=? where id=?'
+            cursor.execute(sql,(repo_keys,id))
+        if(parent_id !='0'):
+            sql = 'update scantask set parent_id=? where id=?'
+            cursor.execute(sql,(parent_id,id))
+        if(states !='0'):
+            sql = 'update scantask set states=? where id=?'
+            cursor.execute(sql,(states,id))
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return id
+    '''
     创建扫描任务存储DB    
     '''
     def createscantaskdb(self,id):
@@ -89,7 +117,6 @@ class dbscantask:
         conn = sqlite3.connect(self.maindb)
         cursor = conn.cursor()        
         sql = "delete from scantask where id =?"
-        print(id)
         cursor.execute(sql,[(id)])
         cursor.close()
         conn.commit()
@@ -231,4 +258,4 @@ if __name__=='__main__':
 #     scantask.queryscanlist('扫描')
 #     scantask.getscanlist(current='1', pageSize='10')
 #     scantask.getscanlistnums()
-    scantask.uptaskstatusByid(3,3)
+    scantask.uptaskstatusByid(4,3)

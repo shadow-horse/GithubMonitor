@@ -220,7 +220,7 @@ const TableList = () => {
         }}
         toolBarRender={(action, { selectedRows }) => [
           <Button type="primary" onClick={() => handleModalVisible(true)}>
-          <PlusOutlined /> 新建任务
+          <PlusOutlined /> 新建/修改任务
           </Button>,
           selectedRows && selectedRows.length > 0 && (
             <Dropdown

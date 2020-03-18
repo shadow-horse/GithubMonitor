@@ -16,7 +16,9 @@ Github代码监控程序很多，如Github-Monitor，但是无法满足灵活的
 	3. 仓库关键词：以|符号分割，会在一级关键词搜索的仓库中继续搜索分割的字符  
 	4. 设置定时扫描任务 
 	5. 基于扫描结果的二次扫描（未实现）
-	6. 修改已有的扫描任务（未实现）
+	6. 修改已有的扫描任务
+	7. 实现针对不同文件类型的过滤，有限针对某些文件类型告警  
+	8. 代码监控主要用于监控新增的代码，随时检查是否存在泄漏
 
 
 
@@ -62,7 +64,7 @@ Ant Design组件：https://ant.design/docs/react/introduce-cn
 	3. cnpm install
 运行前台:
 
-	1. npm run start  
+	1. npm run start (如果运行报错，请升级Nodejs和npm版本)
 	2. 后台运行命令，执行完成后，以exit退出会话： nohup npm run start > msg.out &
 
 ### 3. Server服务端
@@ -71,6 +73,7 @@ Python配置环境依赖：
 
 	1. pip3 install pydantic
 	2. pip3 install fastapi
+	3. pip3 install uvicorn
 
 1. config.ini 配置github token  
 

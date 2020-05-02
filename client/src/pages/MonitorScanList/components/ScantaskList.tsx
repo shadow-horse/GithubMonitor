@@ -1,6 +1,6 @@
 import React from "react";
 import { List, Avatar, Icon, message, Button } from 'antd';
-import { getscanlist ,updatescanlist} from '../service';
+import { getscanlist ,updatescanlist,updatescanlistbyrepo} from '../service';
 import Item from "antd/lib/list/Item";
 
 class ScantaskList extends React.Component {
@@ -88,6 +88,35 @@ class ScantaskList extends React.Component {
     
     };
 
+    //标记仓库忽略
+    handleRemoverepo = async (item,status) =>{
+        console.log('remove repo',item.reponame);
+         try {
+            await updatescanlistbyrepo(this.props.id, item.reponame,status);
+            message.success("忽略仓库成功");
+
+            //本地删除
+            let delindex = -1;
+            const tempData = [];
+            for (let i = 0; i < this.listData.length; i++)
+            {
+                if (item.reponame === this.listData[i].reponame) {
+                    console.log('success');
+                    delindex = i;
+                } else {
+                    tempData.push(this.listData[i]);
+                }
+            }
+            //更新dataSource
+            this.listData = tempData;
+            this.setState({
+                dataSource:this.listData,
+            });
+        }catch {
+            message.success("忽略仓库异常");
+        }
+    };
+
     render() {
        
         this.getScanList();
@@ -118,20 +147,23 @@ class ScantaskList extends React.Component {
                         key={item.id}
                         actions={[
                             //onClick事件需要bind方法，否则渲染时默认全部执行
+                            <p disabled="true">&nbsp;&nbsp;&nbsp;&nbsp;</p>,
                             <Button type="primary" disabled={item.disable} onClick={this.handleRemovelist.bind(this,item,'4')}>标记已处理</Button>,
-                            <Button type="danger" onClick={this.handleRemovelist.bind(this,item,'3')}>标记忽略</Button>,
-
+                            <Button type="danger" onClick={this.handleRemovelist.bind(this, item, '3')}>标记忽略</Button>,
+                            <Button type="danger" onClick={this.handleRemoverepo.bind(this,item,'3')}>忽略仓库</Button>,
                         ]}
                     >
                         <List.Item.Meta
                             avatar={<Avatar src={item.avatar} />}
                             title={<a target="_blank" href={item.html_url}>{item.path}</a>}
-                            description={item.keywords}
+                            description={'仓库：' + item.reponame}
                         />
-
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <a target="_blank" href={item.html_url} >{item.html_url}</a>
-                        <br/>
-                        <p>{item.content}</p>
+                        <br />
+                        <p>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        keywords: {item.content}</p>
                     </List.Item>
                 )}
             />

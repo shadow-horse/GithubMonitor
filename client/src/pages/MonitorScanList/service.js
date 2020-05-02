@@ -37,3 +37,11 @@ export function updateallignore(id, status) {
     data: { id:id,status:status,method:'updateallignore'},
   });
 }
+
+//根据reponame标记忽略
+export function updatescanlistbyrepo(taskid,reponame,status){
+  return request('/server/scanlist/deletebyrepo', {
+    method: 'POST',
+    data:{taskid:taskid,reponame:reponame,status:status,method:'deletebyrepo'},
+  });
+}

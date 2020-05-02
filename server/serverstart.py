@@ -180,13 +180,13 @@ async def gettasklist(method:str=None):
     taskdata = task.getscanlist()
     return taskdata
 
-
 class scanlistItem(BaseModel):
     id:str=None
     taskid:str=None
     scanlistid:str=None
     status:str=None
     method:str=None
+    reponame:str=None
 '''
 扫描任务scanlist
 '''
@@ -219,6 +219,17 @@ async def updateallignore(req_data:scanlistItem):
     db.openscanlist(req_data.id)
     db.updateallignore(req_data.status);
     db.closescanlist()
+
+'''
+标记忽略仓库
+'''
+@app.post('/scanlist/deletebyrepo')
+async def updateScanlistStatusByrepo(req_data:scanlistItem):
+    db = dboperation.dboperation()
+    db.openscanlist(req_data.taskid)
+    db.updatescanlistByrepo(req_data.reponame,req_data.status);
+    db.closescanlist()
+
 
 if __name__ == '__main__':
     import uvicorn

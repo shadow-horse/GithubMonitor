@@ -219,6 +219,14 @@ class dboperation:
         else:
             return False
     
+    '''
+    设置某个仓库的状态
+    '''
+    def updatescanlistByrepo(self,reponame,status):
+        sql = "update scanlist set status=? where repo=?"
+        self.slcursor.execute(sql,(status,reponame))
+        return True
+    
     
 if __name__ == '__main__':
     

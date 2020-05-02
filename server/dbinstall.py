@@ -37,11 +37,11 @@ def createmaindbsql():
         + "parent_id varchar(20),"\
         + "states varchar(20)"\
         + ")"
-    print(sql)
     cursor.execute(sql)
     cursor.close()
     conn.commit()
     conn.close()
+    print('Create main.db, table scantask success.')
 #删除扫描任务表
 def deletescantasktable():
     conn = sqlite3.connect("main.db")

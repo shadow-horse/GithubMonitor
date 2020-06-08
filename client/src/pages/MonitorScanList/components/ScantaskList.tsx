@@ -152,18 +152,22 @@ class ScantaskList extends React.Component {
                             <Button type="danger" onClick={this.handleRemovelist.bind(this, item, '3')}>标记忽略</Button>,
                             <Button type="danger" onClick={this.handleRemoverepo.bind(this,item,'3')}>忽略仓库</Button>,
                         ]}
-                    >
+                    > 
                         <List.Item.Meta
                             avatar={<Avatar src={item.avatar} />}
-                            title={<a target="_blank" href={item.html_url}>{item.path}</a>}
+                            title={<a target="_blank" href= >{item.path}</a >}
                             description={'仓库：' + item.reponame}
                         />
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <a target="_blank" href={item.html_url} >{item.html_url}</a>
+                        <a target="_blank" href={item.html_url} >{item.html_url}</a >
                         <br />
                         <p>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        keywords: {item.content}</p >
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        keywords: {item.content}</p>
+                        <a target="_blank" href={"https://github.com/"+item.reponame+"/search?q="+item.keywords+"&unscoped_q="+item.keywords}>{"https://github.com/"+item.reponame+"/search?q="+item.keywords+"&unscoped_q="+item.keywords}</a >
+                    </List.Item>
+
                     </List.Item>
                 )}
             />

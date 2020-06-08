@@ -82,8 +82,9 @@ class dboperation:
     '''
     获取所有需要处理的扫描结果
     '''
-    def selectscanlistBystatus(self,status):
+    def selectscanlistBystatus(self,status,keywords=''):
         data=[]
+        jsonitem['keywords']=keywords    
         #r如果搜索待处理的结果，需要先获取status=1和status=2的数据
         if(status == '0'):
             #先获取关键文件结果
@@ -158,6 +159,10 @@ class dboperation:
         self.slcursor.execute(sql,[(sha)])
         values = self.slcursor.fetchall()
         return values
+
+
+
+
     '''
     更新一条扫描结果的状态，是否屏蔽
     status:

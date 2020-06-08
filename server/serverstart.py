@@ -192,11 +192,16 @@ class scanlistItem(BaseModel):
 '''
 @app.post('/scanlist/list')
 async def getScanlist(req_data:scanlistItem):
-    print(req_data.id)
+    #获取任务信息
+    maindb = dbscantask.dbscantask()
+    task = maindb.queryscanlistByid(req_data.id);
+    f_keys = task[0][2]
+    
+    
     db = dboperation.dboperation()
     db.openscanlist(req_data.id)
     values=[]
-    values = db.selectscanlistBystatus(req_data.status)
+    values = db.selectscanlistBystatus(req_data.status,keywords=f_keys)
     db.closescanlist()
     return values
 

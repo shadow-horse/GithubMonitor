@@ -143,6 +143,10 @@ class search:
         db = dboperation.dboperation()
         result = db.md5isExist(id,md5,htmlurl)
         return result
+    def htmlurlisExist(self,id,htmlurl):
+        db = dboperation.dboperation()
+        result = db.htmlurlisExist(id,htmlurl)
+        return result
     
     def judgeFilesuffix(self,name):
         blacklist = ['.cache','.types','.ipynb','.tex','.resx','.wxss','.svg','.raw','.pgm','.ima','.pgm','.gemspec','.buildinfo','.gitignore','.css','.m3u','.classpath']
@@ -340,7 +344,96 @@ class search:
         print("定时扫描任务结束")            
         return True
  
-    
+    '''
+    修改循环扫描逻辑，循环监控只针对一级扫描关键词监控新增的文件，为了减少误报和漏报率以及工作投入，对新增文件的监控属于最有效的办法
+    '''
+    def monitorNewFiletask(self,id):
+        values = self.getshtaskinfo(id)
+        id = values[0][0]
+        name = values[0][1]
+        f_keys = values[0][2]
+        s_keys = values[0][3]
+        repo_keys = values[0][4]
+        parent_id = values[0][5]
+        status = values[0][6]
+        
+        #MD5存在计算器，如果连续limit值则扫描结束
+        counter = 0
+        counterlimit= 10
+       
+        print('==============定时扫描任务=================')
+        print('id:'+ str(id))
+        print('name:' + name)
+        print('f_keys:' + f_keys)
+        print('s_keys'+ s_keys)
+        print('repo_keys:'+repo_keys)
+        print('========================================')
+        #判断是否存在parent_id，基于已有结果进行搜索
+        #此处直接search code
+        try:
+            api = githubapi.githubapi()
+            res = api.searchcode(f_keys)
+            
+            if not res:
+                print('定时扫描任务终止：异常终止')
+                #设置扫描状态
+                taskdb = dbscantask.dbscantask()
+                taskdb.uptaskstatusByid(id,3)
+                return False
+         
+            total_count = res['total_count']
+            pages = math.floor(total_count/100)
+            print('扫描共%s条记录，分为%s页' % (total_count,pages))
+            
+            #消息告警
+            
+            item = res['items']
+            reponame=''
+            for i in item:
+                if(counter > counterlimit):
+                    break
+                if(self.htmlurlisExist(id,i['html_url'])):
+                    print('重复条目：'+i['path'])
+                    counter = counter + 1
+                else:
+                    counter = 0
+                    result = self.dealitem(i,id,f_keys,flag='0')
+                    
+            #github最多返回1000条数据，默认每一页100条
+            if(pages > 10):
+                pages = 11
+            else:
+                pages = pages+1
+            for i in range(2,pages):
+                if(counter > counterlimit):
+                    break
+                res = api.searchcode(f_keys,i)
+                if not res:
+                    print('定时扫描任务异常：'+ res)
+                    continue
+                item = res['items']
+                for i in item:
+                    if(counter > counterlimit):
+                        break
+                    if(self.htmlurlisExist(id,i['html_url'])):
+                        print('重复条目：'+i['path'])
+                        counter = counter + 1
+                    else:
+                        counter = 0
+                        result = self.dealitem(i,id,f_keys,flag='0')
+            #设置扫描状态
+            taskdb = dbscantask.dbscantask()
+            taskdb.uptaskstatusByid(id,2)
+        except Exception as e:
+            print('定时扫描任务终止：异常终止')
+            print(e)
+            #设置扫描状态
+            taskdb = dbscantask.dbscantask()
+            taskdb.uptaskstatusByid(id,3)
+        if(counter > counterlimit):
+            print('重复条目已经大于临界值')
+        print("定时扫描任务结束")            
+        return True    
 if __name__ == '__main__':
     print('search......')
 #     sh = search()

@@ -26,16 +26,20 @@ class timingtask:
     
     def executeBytaskid(self,item):
         #判断扫描任务是否处理扫描状态
-        if(item['states'] == '1'):
-            return False
-        
+#         if(item['states'] == '1'):
+#             return False
+
         db = dbscantask.dbscantask()
         db.uptaskstatusByid(item['id'],'1')
         
         sea =  search.search()
-        sea.timingtask(item['id'])
+        #监控文件md5的变化
+#         sea.timingtask(item['id'])
+        #监控文件是否新增  
+        sea.monitorNewFiletask(item['id'])
         return True
-    
+        
+        
     def run(self):
         while(True):
             befortime = time.time()

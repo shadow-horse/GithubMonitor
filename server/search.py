@@ -9,6 +9,13 @@ import githubapi
 import math
 import dbscantask
 import hashlib
+import time
+import datetime
+import json
+import requests
+import config
+requests.adapters.DEFAULT_RETRIES =5
+
 class search:
             
     '''
@@ -170,7 +177,9 @@ class search:
         sha = item['sha']
         html_url = item['html_url']
         repo_name = item['repository']['full_name']
-        content = keys
+        #添加发现时间
+        get_time = (datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
+        content = get_time +"  " + keys
         #根据文件后缀判断是否需要继续检查
         suffix = self.judgeFilesuffix(name)
         if(suffix == 'black'):

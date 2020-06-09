@@ -11,13 +11,12 @@ import math
 import dbscantask
 import search
 import time
-
-
+import datetime
 
 class timingtask:
     def __init__(self):
         #设置时间间隔：分钟
-        self.timeinterval = 60 * 60
+        self.timeinterval = 12 * 60 * 60
         
     def gettasklist(self):
         db = dbscantask.dbscantask()
@@ -38,23 +37,21 @@ class timingtask:
         #监控文件是否新增  
         sea.monitorNewFiletask(item['id'])
         return True
-        
-        
+                
     def run(self):
         while(True):
-            befortime = time.time()
             tasklist = self.gettasklist()
             for item in tasklist:
                 self.executeBytaskid(item)
-            
-            aftertime = time.time()
-            interval = aftertime - befortime
-            if(interval < self.timeinterval):
-                print('需要继续等待：')
-                print(self.timeinterval - interval)
-                time.sleep(self.timeinterval - interval)
-                
-           
+            get_time = (datetime.datetime.now()).strftime('%H')
+            int_time = int(get_time)
+            if(int_time <6 or int_time >23):
+                continue
+            else:
+                hours = 23-int_time
+                print("please wait %s hours" % (hours))
+                seconds = (23-int_time) * 60 * 60 
+                time.sleep(seconds)       
         
     
 if __name__ == '__main__':

@@ -102,6 +102,7 @@ class dboperation:
                 jsonitem['content']=item[6]
                 jsonitem['disable']=False
                 jsonitem['avatar']='/github.jpg'
+                jsonitem['keywords']=keywords
                 data.append(jsonitem)
             #获取二级搜索关键结果
             sql = "select * from scanlist where status = '1' order by id desc"
@@ -118,6 +119,7 @@ class dboperation:
                 jsonitem['content']=item[6]
                 jsonitem['disable']=False
                 jsonitem['avatar']='/github.jpg'
+                jsonitem['keywords']=keywords
                 data.append(jsonitem)
             #在获取仓库搜索关键词
             sql = "select * from scanlist where status = '2' order by id desc"
@@ -134,6 +136,7 @@ class dboperation:
                 jsonitem['content']=item[6]
                 jsonitem['disable']=False
                 jsonitem['avatar']='/github.jpg'
+                jsonitem['keywords']=keywords
                 data.append(jsonitem)
         #根据status查询结果    
         sql = "select * from scanlist where status = ? order by id desc"
@@ -150,6 +153,7 @@ class dboperation:
             jsonitem['content']=item[6]
             jsonitem['disable']=False
             jsonitem['avatar']='/github.jpg'
+            jsonitem['keywords']=keywords
             data.append(jsonitem)
         
         return data
@@ -223,6 +227,22 @@ class dboperation:
             return True
         else:
             return False
+    
+    '''
+    判断文件是否存在
+    '''
+    def htmlurlisExist(self,id,htmlurl):
+        self.openscanlist(id)
+        sql = "select id from scanlist where html_url = ?"
+        self.slcursor.execute(sql,[(htmlurl)])
+        values = self.slcursor.fetchall()
+        self.closescanlist()
+        if len(values) != 0:
+            return True
+        else:
+            return False
+    
+    '''
     
     '''
     设置某个仓库的状态
